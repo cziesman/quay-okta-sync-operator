@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: quay-okta-sync-operator
+rules:
+- apiGroups: ["identity.example.com"]
+  resources: ["quayoktasyncs"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["identity.example.com"]
+  resources: ["quayoktasyncs/status"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]

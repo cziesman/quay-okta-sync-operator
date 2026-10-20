@@ -1,0 +1,31 @@
+apiVersion: identity.example.com/v1alpha1
+kind: QuayOktaSync
+metadata:
+  name: quay-teams
+  namespace: quay-okta-sync-system
+spec:
+  oktaBaseUrl: https://example.okta.com
+  quayBaseUrl: https://quay.example.com
+  credentialsSecret: quay-okta-sync-credentials
+  intervalSeconds: 900
+  dryRun: true
+
+  # Groups matching this pattern are discovered automatically from Okta.
+  # The capture group becomes the Quay team name.
+  # Default: <environment>-<division>-<team>-<role>
+  groupNamePattern: '^[^-]+-[^-]+-([^-]+)-[^-]+$'
+  oktaUsernameAttribute: login
+
+  # All discovered groups sync into teams in this Quay organization.
+  quayOrganization: engineering
+  quayRole: member
+
+  # Leave false to preserve manually added Quay members. Set true only if
+  # the Operator should enforce exact membership for managed teams.
+  removeExtraMembers: false
+
+  # Optional exact-name exceptions for groups that do not match the pattern,
+  # or whose extracted team name needs to be changed.
+  teamNameOverrides:
+    - oktaGroup: legacy-farmers-admins
+      quayTeam: farmers
