@@ -1,4 +1,4 @@
-apiVersion: identity.example.com/v1alpha1
+apiVersion: quayoktasync.io/v1alpha1
 kind: QuayOktaSync
 metadata:
   name: quay-teams

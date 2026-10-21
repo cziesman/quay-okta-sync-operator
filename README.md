@@ -45,7 +45,7 @@ This builds the application and creates the local Docker image configured in `po
 
 ```bash
 oc apply -f kubernetes/operator.yaml
-oc wait --for condition=Established --timeout=60s crd/quayoktasyncs.identity.example.com
+oc wait --for condition=Established --timeout=60s crd/quayoktasyncs.quayoktasync.io
 ```
 
 3. Create credentials in the operator namespace. Do not apply a placeholder Secret or commit real tokens:
