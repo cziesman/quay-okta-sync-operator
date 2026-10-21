@@ -1,58 +1,20 @@
 package com.redhat.quayoktasyncooperator;
 
-import java.util.List;
-
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.model.annotation.Group;
+import io.fabric8.kubernetes.model.annotation.ShortNames;
 import io.fabric8.kubernetes.model.annotation.Version;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
-@Group("identity.example.com")
+@Group("quayoktaysync.io")
 @Version("v1alpha1")
-public class QuayOktaSync extends CustomResource<QuayOktaSync.Spec, QuayOktaSync.Status> implements Namespaced {
+public class QuayOktaSync extends CustomResource<QuayOktaSyncSpec, QuayOktaSyncStatus> implements Namespaced {
 
-    public static class Spec {
+    @Override
+    public String toString() {
 
-        public String oktaBaseUrl;
-
-        public String quayBaseUrl;
-
-        public String credentialsSecret;
-
-        public Integer intervalSeconds = 900;
-
-        public Boolean dryRun = true;
-
-        public String groupNamePattern = "^[^-]+-[^-]+-([^-]+)-[^-]+$";
-
-        public String oktaUsernameAttribute = "login";
-
-        public String quayOrganization;
-
-        public String quayRole = "member";
-
-        public Boolean removeExtraMembers = false;
-
-        public List<TeamNameOverride> teamNameOverrides;
-
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
     }
-
-    public static class TeamNameOverride {
-
-        public String oktaGroup;
-
-        public String quayTeam;
-
-    }
-
-    public static class Status {
-
-        public String phase;
-
-        public String message;
-
-        public String lastSyncTime;
-
-    }
-
 }

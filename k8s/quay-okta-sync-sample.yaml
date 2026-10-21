@@ -1,0 +1,16 @@
+apiVersion: identity.example.com/v1alpha1
+kind: QuayOktaSync
+metadata:
+  name: quay-teams
+  namespace: quay-okta-sync-system
+spec:
+  oktaBaseUrl: https://example.okta.com
+  quayBaseUrl: https://quay.example.com
+  credentialsSecret: quay-okta-sync-credentials
+  intervalSeconds: 900
+  dryRun: true
+  groupNamePattern: '^[^-]+-[^-]+-([^-]+)-[^-]+$'
+  oktaUsernameAttribute: login
+  quayOrganization: engineering
+  quayRole: member
+  removeExtraMembers: false

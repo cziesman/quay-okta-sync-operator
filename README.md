@@ -1,6 +1,6 @@
 # Quay Okta Sync Operator
 
-A Java Operator SDK-based OpenShift operator. It watches `QuayOktaSync` custom resources and periodically discovers relevant Okta groups, derives Quay team names from their names, aggregates membership from all groups that resolve to the same team, and reconciles membership through the Quay API.
+A Java Operator SDK-based OpenShift operator targeting Java 17. `QuayOktaSyncOperator` initializes the SDK `Operator` and registers `QuayOktaSyncReconciler`; the reconciler handles the Kubernetes custom resource lifecycle and delegates Okta/Quay synchronization to `QuayOktaSyncService`. It periodically discovers relevant Okta groups, derives Quay team names from their names, aggregates membership from all groups that resolve to the same team, and reconciles membership through the Quay API.
 
 ## Discovery behavior
 
@@ -28,40 +28,43 @@ All managed teams are created under the single `spec.quayOrganization`, with the
 
 ## Build
 
-Requires JDK 17+ and Maven 3.9+.
+Requires JDK 17, Maven 3.9+, and Docker. The image is built with Jib; this project does not use a Dockerfile.
 
 ```bash
-mvn clean package
+mvn install jib:dockerBuild
 ```
 
-## Install on OpenShift
+This builds the application and creates the local Docker image configured in `pom.xml`. The configured image name matches the default image in `kubernetes/operator.yaml`. Authenticate to the target registry and push the image before deploying, or change the image name in both files to your registry. The `jib:dockerBuild` goal builds locally; it does not push the image.
 
-Create the namespace and install the CRD/RBAC resources:
+## Kubernetes/OpenShift manifests
+
+`kubernetes/operator.yaml` is the single installation manifest. It defines the namespace, CRD, service account, ClusterRole, ClusterRoleBinding, and operator Deployment. Sample custom-resource instances sit alongside it in `kubernetes/`, following the Tomcat operator sample layout.
+
+1. Update the image in `kubernetes/operator.yaml` to your pushed image.
+2. Install the operator resources:
 
 ```bash
-oc new-project quay-okta-sync-system
-oc apply -f config/crd/bases/identity.example.com_quayoktasyncs.yaml
-oc apply -f config/rbac/serviceaccount.yaml
-oc apply -f config/rbac/role.yaml
-oc apply -f config/rbac/rolebinding.yaml
+oc apply -f kubernetes/operator.yaml
+oc wait --for condition=Established --timeout=60s crd/quayoktasyncs.identity.example.com
 ```
 
-Create credentials securely (prefer an external secret manager or sealed/external-secrets workflow rather than committing a populated Secret):
+3. Create credentials in the operator namespace. Do not apply a placeholder Secret or commit real tokens:
 
 ```bash
-oc -n quay-okta-sync-system create secret generic quay-okta-sync-credentials \\
-  --from-literal=okta-api-token='<OKTA_TOKEN>' \\
+oc -n quay-okta-sync-system create secret generic quay-okta-sync-credentials \
+  --from-literal=okta-api-token='<OKTA_TOKEN>' \
   --from-literal=quay-api-token='<QUAY_TOKEN>'
 ```
 
-Build and push the image using your approved OpenShift build process, then apply the deployment and sample custom resource:
+4. Apply **one** sample instance, editing the URLs and Quay organization first:
 
 ```bash
-oc apply -f deploy/operator-deployment.yaml
-oc apply -f config/samples/identity_v1alpha1_quayoktasync.yaml
+oc apply -f kubernetes/quay-okta-sync-sample.yaml
+# Or use the sample that includes a teamNameOverrides entry instead:
+# oc apply -f kubernetes/quay-okta-sync-with-overrides-sample.yaml
 ```
 
-Update the image field in `deploy/operator-deployment.yaml` to your image location.
+Both samples use `dryRun: true` initially. Apply one sample at a time unless you intentionally want two independent custom resources running sync cycles.
 
 ## Custom resource settings
 
@@ -86,3 +89,15 @@ Update the image field in `deploy/operator-deployment.yaml` to your image locati
 5. Restrict Secret access to the operator namespace and use narrowly scoped credentials where supported.
 6. Add leader election before running multiple replicas.
 7. Consider making team creation optional if teams must be pre-approved.
+
+## Unit tests
+
+The project includes JUnit 5 tests for the custom-resource defaults, group-name matching and team-name overrides, URL helper behavior, Okta pagination-link parsing, Secret token decoding, and reconciliation validation failures.
+
+Run the tests from the project root with:
+
+```bash
+mvn test
+```
+
+The tests have been added but were not executed in the generation environment because Maven is not installed there.

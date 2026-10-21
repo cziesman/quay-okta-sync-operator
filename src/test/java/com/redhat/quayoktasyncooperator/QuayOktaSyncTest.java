@@ -10,7 +10,7 @@ class QuayOktaSyncTest {
     @Test
     void specHasExpectedSafeDefaults() {
 
-        QuayOktaSync.Spec spec = new QuayOktaSync.Spec();
+        QuayOktaSyncSpec spec = new QuayOktaSyncSpec();
 
         assertEquals(Integer.valueOf(900), spec.intervalSeconds);
         assertEquals(Boolean.TRUE, spec.dryRun);
@@ -24,8 +24,8 @@ class QuayOktaSyncTest {
     @Test
     void overrideContainsExplicitGroupAndTeamNames() {
 
-        QuayOktaSync.TeamNameOverride override = new QuayOktaSync.TeamNameOverride();
-        override.oktaGroup = "legacy-farmers-admins";
+        TeamNameOverride override = new TeamNameOverride();
+        override.oktaGroup = "legacy-farmers";
         override.quayTeam = "farmers";
 
         assertEquals("legacy-farmers-admins", override.oktaGroup);
